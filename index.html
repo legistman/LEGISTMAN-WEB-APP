@@ -1575,18 +1575,19 @@ function saveTest(){
   const key = QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
   hap('medium');
   
+  // Faqat kalit ma'lumotlarni yuborish (savollar matnsiz)
+  // Savol matni keyinchalik PDF fayl orqali bot da kiritiladi
   const payload = {
     action:'add_test_full',
-    name:QS.name, time:QS.time,
-    is_free:QS.is_free, key:key,
-    questions:QS.questions
+    name:QS.name,
+    time:QS.time,
+    is_free:QS.is_free,
+    key:key,
+    cnt:QS.questions.length
   };
   
-  // Base64 encode
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   
-  // /savetest_ENCODED komandasi orqali botga yuborish
-  // Bu 100% ishlaydigan usul
   if(tg){
     tg.openTelegramLink('https://t.me/legistman_bot?start=savetest_' + encoded);
   }
