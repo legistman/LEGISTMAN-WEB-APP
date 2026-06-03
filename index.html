@@ -1130,30 +1130,6 @@ let U={full_name:'',is_pro:false,is_admin:false,is_new:true,
   my_results:[],top_ratings:[],stats:{},
   pro_price:'349 000',card_num:'9860 3501 4876 2387',card_own:'Mallayev Ozodbek'};
 
-try{
-  // Bot ?d=BASE64 parametr orqali ma'lumot yuboradi
-  const _sp = new URLSearchParams(window.location.search).get('d');
-  if(_sp){
-    const _d = JSON.parse(atob(_sp));
-    U.full_name  = _d.full_name  || '';
-    U.is_pro     = !!_d.is_pro;
-    U.is_admin   = !!_d.is_admin;
-    U.pro_until  = _d.pro_until  || '';
-    U.tests_done = _d.tests_done || 0;
-    U.best_ball  = _d.best_ball  || 0;
-    U.goal_done  = !!_d.goal_done;
-    U.badges     = _d.badges     || [];
-    U.pro_price  = _d.pro_price  || '349 000';
-    U.card_num   = _d.card_num   || '9860 3501 4876 2387';
-    U.card_own   = _d.card_own   || 'Mallayev Ozodbek';
-    U.is_new     = false;
-  }
-  // Telegram user dan to'ldirish
-  const tgUser = tg?.initDataUnsafe?.user;
-  if(tgUser && !U.full_name){
-    U.full_name = ((tgUser.first_name||'') + (tgUser.last_name?' '+tgUser.last_name:'')).trim();
-  }
-}catch(e){console.log('parse error:',e);}
 
 // SIDEBAR
 function toggleSidebar(){
@@ -1629,7 +1605,33 @@ function toast(msg,d=2200){
 
 // BOOT
 window.addEventListener('load',()=>{
-  if(!U.is_new&&U.full_name){openMain();}
+  try{
+    // Bot ?d=BASE64 parametr orqali ma'lumot yuboradi
+    const _sp = new URLSearchParams(window.location.search).get('d');
+    if(_sp){
+      // UTF-8 to'g'ri decode qilish (atob Latin-1 ishlatadi)
+    const _bytes = Uint8Array.from(atob(_sp), c => c.charCodeAt(0));
+    const _d = JSON.parse(new TextDecoder('utf-8').decode(_bytes));
+      U.full_name  = _d.full_name  || '';
+      U.is_pro     = !!_d.is_pro;
+      U.is_admin   = !!_d.is_admin;
+      U.pro_until  = _d.pro_until  || '';
+      U.tests_done = _d.tests_done || 0;
+      U.best_ball  = _d.best_ball  || 0;
+      U.goal_done  = !!_d.goal_done;
+      U.badges     = _d.badges     || [];
+      U.pro_price  = _d.pro_price  || '349 000';
+      U.card_num   = _d.card_num   || '9860 3501 4876 2387';
+      U.card_own   = _d.card_own   || 'Mallayev Ozodbek';
+      U.is_new     = false;
+    }
+    // Telegram user dan to'ldirish
+    const tgUser = tg?.initDataUnsafe?.user;
+    if(tgUser && !U.full_name){
+      U.full_name = ((tgUser.first_name||'') + (tgUser.last_name?' '+tgUser.last_name:'')).trim();
+    }
+  }catch(e){console.log('parse error:',e);}
+  if(!U.is_new && U.full_name){ openMain(); }
   else{
     document.getElementById('p-reg').classList.remove('off-r');
     document.getElementById('p-reg').classList.add('on');
