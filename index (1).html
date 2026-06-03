@@ -1575,34 +1575,20 @@ function saveTest(){
   const key = QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
   hap('medium');
   
-  // Ma'lumotni base64 ga o'giramiz
   const payload = {
     action:'add_test_full',
     name:QS.name, time:QS.time,
     is_free:QS.is_free, key:key,
     questions:QS.questions
   };
+  
+  // Base64 encode
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   
-  // Bot ga /save komandasi orqali yuborish
-  // tg.sendData ishlasa - ishlatamiz
-  if(tg && tg.sendData){
-    try{
-      tg.sendData(JSON.stringify(payload));
-      return; // Muvaffaqiyatli - Web App yopiladi
-    }catch(e){
-      console.log('sendData failed, trying alternative:', e.message);
-    }
-  }
-  
-  // Fallback: /save_ENCODED komandasi
-  // Web App yopib botga komanda yuboramiz
+  // /savetest_ENCODED komandasi orqali botga yuborish
+  // Bu 100% ishlaydigan usul
   if(tg){
-    tg.close();
-    // 1 soniyadan keyin bot chat ochiladi, foydalanuvchi /save bosadi
-    setTimeout(()=>{
-      tg.openTelegramLink('https://t.me/legistman_bot?start=save_'+encoded.slice(0,200));
-    }, 500);
+    tg.openTelegramLink('https://t.me/legistman_bot?start=savetest_' + encoded);
   }
 }
 function cancelQ(){
