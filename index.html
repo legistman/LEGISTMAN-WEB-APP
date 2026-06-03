@@ -1130,7 +1130,17 @@ let U={full_name:'',is_pro:false,is_admin:false,is_new:true,
   my_results:[],top_ratings:[],stats:{},
   pro_price:'349 000',card_num:'9860 3501 4876 2387',card_own:'Mallayev Ozodbek'};
 
-try{const sp=tg?.initDataUnsafe?.start_param;if(sp)Object.assign(U,JSON.parse(atob(sp)));}catch(e){}
+try{
+  // 1. URL parametrdan olish (WebAppInfo url da yuboriladi)
+  const urlParams = new URLSearchParams(window.location.search);
+  const sp = urlParams.get('tgWebAppStartParam') || tg?.initDataUnsafe?.start_param;
+  if(sp) Object.assign(U, JSON.parse(atob(sp)));
+  // 2. Telegram user dan to'ldirish
+  const tgUser = tg?.initDataUnsafe?.user;
+  if(tgUser && !U.full_name){
+    U.full_name = ((tgUser.first_name||'') + (tgUser.last_name?' '+tgUser.last_name:'')).trim();
+  }
+}catch(e){console.log('parse error:',e);}
 
 // SIDEBAR
 function toggleSidebar(){
