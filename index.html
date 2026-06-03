@@ -197,6 +197,10 @@ body{font-family:'Outfit',sans-serif;color:var(--w);font-size:15px}
 .tp-fill{height:100%;background:linear-gradient(90deg,var(--gold),#F0C060);
          border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .timer-row{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 16px}
+.timer-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+              padding:10px 16px 6px;text-align:center}
+.tc-label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.tc-time{display:flex;align-items:center;justify-content:center}
 .tr-ring{position:relative;width:42px;height:42px;flex-shrink:0}
 .tr-ring svg{transform:rotate(-90deg)}
 .tr-track{fill:none;stroke:var(--bg3);stroke-width:3}
@@ -486,19 +490,19 @@ body{font-family:'Outfit',sans-serif;color:var(--w);font-size:15px}
     </div>
     <div class="tp-track"><div class="tp-fill" id="tp-fill" style="width:0%"></div></div>
   </div>
-  <div class="timer-row">
-    <div class="tr-ring">
-      <svg width="42" height="42" viewBox="0 0 42 42">
-        <circle class="tr-track" cx="21" cy="21" r="18"/>
-        <circle class="tr-fill" id="tr-fill" cx="21" cy="21" r="18"
-          stroke="#D4A843" stroke-dasharray="113.1" stroke-dashoffset="0"/>
-      </svg>
-      <div class="tr-num" id="tr-num">30</div>
+  <div class="timer-center">
+    <div class="tc-label">Qolgan vaqt</div>
+    <div class="tc-time">
+      <div class="tr-ring" style="width:56px;height:56px">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="tr-track" cx="28" cy="28" r="24"/>
+          <circle class="tr-fill" id="tr-fill" cx="28" cy="28" r="24"
+            stroke="#D4A843" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+        </svg>
+        <div class="tr-num" id="tr-num" style="font-size:11px">30:00</div>
+      </div>
     </div>
-    <div class="tr-bar">
-      <div class="tr-lbl">Qolgan vaqt</div>
-      <div class="tr-blocks" id="tr-blocks"></div>
-    </div>
+    <div class="tr-blocks" id="tr-blocks" style="justify-content:center;margin-top:8px"></div>
   </div>
   <div class="qbody" id="qbody">
     <div class="qnum" id="q-num">1-savol</div>
@@ -990,11 +994,11 @@ function go(page){
 function buildTests(){
   const el = document.getElementById('tests-list');
   el.innerHTML = '';
-  const tests = U.tests.length ? U.tests : [
-    {id:1,title:'Fuqarolik kodeksi — 1-variant',is_free:1,time_limit:30,question_count:30},
-    {id:2,title:'Mehnat kodeksi — 1-variant',is_free:0,time_limit:30,question_count:30},
-    {id:3,title:'Soliq kodeksi — 1-variant',is_free:0,time_limit:30,question_count:30},
-  ];
+  const tests = U.tests && U.tests.length ? U.tests : [];
+  if(!tests.length){
+    el.innerHTML = "<div style='text-align:center;padding:30px 0;color:var(--m)'>Testlar yoq</div>";
+    return;
+  }
   tests.forEach(t=>{
     const locked = !t.is_free && !U.is_pro;
     const div = document.createElement('div');
@@ -1070,18 +1074,22 @@ function startTimer(){
 }
 
 function updateTimer(s){
-  const mins = Math.floor(s/60);
+  const mins  = Math.floor(s/60);
+  const secs  = s % 60;
   const ratio = s/TS.totalSecs;
-  const circ = 113.1;
+  const circ  = 150.8;
   const offset = circ*(1-ratio);
   const fill = document.getElementById('tr-fill');
   const num  = document.getElementById('tr-num');
-  num.textContent = mins;
+  // MM:SS format
+  num.textContent = String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
   let color = '#D4A843';
   if(ratio<.25) color='#E05252';
   else if(ratio<.5) color='#FF9F0A';
   fill.style.stroke = color;
   fill.style.strokeDashoffset = offset;
+  // Rang o'zgarishi
+  num.style.color = color;
   const active = Math.ceil(ratio*10);
   for(let i=0;i<10;i++){
     const b=document.getElementById('tb'+i);
@@ -1126,7 +1134,7 @@ function renderQuestion(){
 }
 
 function pickChoice(idx, el){
-  if(TS.answered) return;
+  // Answered faqat "Keyingi" bosilgandan keyin — variantni o'zgartirish mumkin
   hap('light');
   TS.selected = idx; TS.answers[TS.cur]=idx; TS.answered=true;
   document.querySelectorAll('.ch').forEach(c=>c.classList.remove('sel'));
@@ -1197,6 +1205,10 @@ function buildGuides(){
     {id:1,title:'Fuqarolik huquqi asoslari',is_free:1},
     {id:2,title:'Mehnat huquqi qollanmasi',is_free:0},
   ];
+  if(!guides.length){
+    el.innerHTML = "<div style='text-align:center;padding:30px 0;color:var(--m)'>Testlar yoq</div>";
+    return;
+  }
   guides.forEach(g=>{
     const locked = !g.is_free && !U.is_pro;
     const d=document.createElement('div');
@@ -1449,25 +1461,27 @@ window.addEventListener('load',()=>{
     U.is_admin=true; U.full_name='Admin Demo'; U.is_new=false;
     U.is_pro=true;
   }
-  // Demo: admin panelni ko'rish uchun
-  U.is_admin  = true;
-  U.is_pro    = true;
-  U.full_name = 'Admin Demo';
-  U.is_new    = false;
-  U.tests_done = 12;
-  U.best_ball  = 87.5;
-  U.rating     = 3;
-  U.badges     = ["🌟 Faol oquvchi", "📚 Bilimdon"];
-  U.goal_done  = true;
-  U.pro_until  = '15.07.2026';
-  U.tests = [
-    {id:1,title:'Fuqarolik kodeksi — 1-variant',is_free:1,time_limit:30,question_count:30},
-    {id:2,title:'Mehnat kodeksi — 1-variant',is_free:0,time_limit:45,question_count:30},
-    {id:3,title:'Soliq kodeksi — 1-variant',is_free:0,time_limit:30,question_count:30},
-  ];
-  U.stats = {total_users:128, pro_users:34, today_users:7, total_tests:8, total_results:342};
-  if(!U.is_new && U.full_name){ openHome(); }
-  else{ show('p-reg'); }
+  // Bot initData dan haqiqiy ma'lumotlarni olish
+  try {
+    const tgUser = tg?.initDataUnsafe?.user;
+    const sp = tg?.initDataUnsafe?.start_param;
+    if (sp) {
+      const decoded = JSON.parse(atob(sp));
+      Object.assign(U, decoded);
+    } else if (tgUser) {
+      // start_param yo'q — faqat Telegram user ma'lumoti
+      U.full_name = (tgUser.first_name||'') + (tgUser.last_name ? ' '+tgUser.last_name : '');
+      U.is_new = !U.full_name;
+    }
+  } catch(e) {
+    console.log('initData parse error:', e);
+  }
+
+  if (!U.is_new && U.full_name) {
+    openHome();
+  } else {
+    show('p-reg');
+  }
 });
 
 // Bot javobini qabul qilish (tg.onEvent)
