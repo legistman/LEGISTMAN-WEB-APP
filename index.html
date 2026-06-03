@@ -597,7 +597,6 @@ textarea.finp{resize:none}
         <div class="sb-item" id="sbi-admin" onclick="navTo('admin')" style="display:none">
           <div class="sb-item-icon">🔧</div>
           <div class="sb-item-txt">Admin panel</div>
-          <span id="sbi-admin-debug" style="font-size:10px;color:var(--muted)"></span>
         </div>
       </div>
       <div class="sb-footer">
@@ -1252,11 +1251,8 @@ function openMain(){
 
   // Admin
   // Admin panel
-  const _adm = document.getElementById('sbi-admin');
-  const _dbg = document.getElementById('sbi-admin-debug');
-  if(_dbg) _dbg.textContent = 'a:'+U.is_admin;
   if(U.is_admin === true || U.is_admin === 1){
-    _adm.style.display='flex';
+    document.getElementById('sbi-admin').style.display='flex';
   }
 
   // Nav ga o'tish
