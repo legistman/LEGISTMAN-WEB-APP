@@ -1574,8 +1574,17 @@ function showDone(){
 function saveTest(){
   const key=QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
   hap('medium');
-  send2('add_test_full',{name:QS.name,time:QS.time,is_free:QS.is_free,key,questions:QS.questions});
-  toast('Test saqlandi!');cancelQ();
+  // sendData faqat Web App yopilganda ishlaydi - shuning uchun close() chaqiramiz
+  try{
+    tg.sendData(JSON.stringify({
+      action:'add_test_full',
+      name:QS.name,
+      time:QS.time,
+      is_free:QS.is_free,
+      key:key,
+      questions:QS.questions
+    }));
+  }catch(e){console.log('saveTest error:',e);}
 }
 function cancelQ(){
   document.getElementById('adm-form').style.display='block';
@@ -1591,14 +1600,19 @@ function reqPDF(){
 function addGuide(){
   const name=document.getElementById('ag-name').value.trim();
   if(!name){toast('Qollanma nomini kiriting');return;}
-  hap('medium');send2('add_guide',{name,is_free:admGT==='free'?1:0});
-  toast('Qollanma saqlandi!');document.getElementById('ag-name').value='';
+  hap('medium');
+  try{
+    tg.sendData(JSON.stringify({action:'add_guide',name,is_free:admGT==='free'?1:0}));
+  }catch(e){console.log('addGuide error:',e);}
 }
 function broadcast(){
   const msg=document.getElementById('a-bc').value.trim();
   if(!msg){toast('Xabar matnini kiriting');return;}
   if(tg)tg.showConfirm('Barcha foydalanuvchilarga yuborilsinmi?',ok=>{
-    if(ok){send2('broadcast',{msg});toast('Xabar yuborildi!');document.getElementById('a-bc').value='';}
+    if(ok){
+      try{tg.sendData(JSON.stringify({action:'broadcast',msg}));}
+      catch(e){console.log('broadcast error:',e);}
+    }
   });
 }
 
