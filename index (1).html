@@ -1572,19 +1572,34 @@ function showDone(){
   hap('medium');
 }
 function saveTest(){
-  const key=QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
+  const key = QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
   hap('medium');
-  // sendData faqat Web App yopilganda ishlaydi - shuning uchun close() chaqiramiz
-  try{
-    tg.sendData(JSON.stringify({
-      action:'add_test_full',
-      name:QS.name,
-      time:QS.time,
-      is_free:QS.is_free,
-      key:key,
-      questions:QS.questions
-    }));
-  }catch(e){console.log('saveTest error:',e);}
+  
+  const payload = JSON.stringify({
+    action:    'add_test_full',
+    name:      QS.name,
+    time:      QS.time,
+    is_free:   QS.is_free,
+    key:       key,
+    questions: QS.questions
+  });
+  
+  console.log('Saving test, payload size:', payload.length, 'bytes');
+  console.log('tg available:', !!tg);
+  console.log('tg.sendData available:', typeof tg?.sendData);
+  
+  if(tg && tg.sendData){
+    try{
+      tg.sendData(payload);
+      // sendData Web App ni yopadi - agar yetib kelsa muvaffaqiyatli
+    }catch(e){
+      console.error('sendData failed:', e.message);
+      // Fallback: botga /savetest komandasi yuborish
+      alert('Xato: ' + e.message + '\nBot orqali saqlang.');
+    }
+  } else {
+    alert('Telegram Web App topilmadi!');
+  }
 }
 function cancelQ(){
   document.getElementById('adm-form').style.display='block';
