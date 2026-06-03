@@ -1006,7 +1006,7 @@ textarea.finp{resize:none}
                   text-align:center;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted)">👑 PRO</div>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="startQI()">Savollarni kiritish →</button>
+            <button class="btn btn-primary" onclick="openBotAdmin('add_test')">📱 Botda test qo'shish</button>
           </div>
 
           <!-- Savollar kiritish -->
@@ -1575,30 +1575,34 @@ function saveTest(){
   const key = QS.questions.map(q=>['A','B','C','D'][q.correct]).join('');
   hap('medium');
   
-  const payload = JSON.stringify({
-    action:    'add_test_full',
-    name:      QS.name,
-    time:      QS.time,
-    is_free:   QS.is_free,
-    key:       key,
-    questions: QS.questions
-  });
+  // Ma'lumotni base64 ga o'giramiz
+  const payload = {
+    action:'add_test_full',
+    name:QS.name, time:QS.time,
+    is_free:QS.is_free, key:key,
+    questions:QS.questions
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   
-  console.log('Saving test, payload size:', payload.length, 'bytes');
-  console.log('tg available:', !!tg);
-  console.log('tg.sendData available:', typeof tg?.sendData);
-  
+  // Bot ga /save komandasi orqali yuborish
+  // tg.sendData ishlasa - ishlatamiz
   if(tg && tg.sendData){
     try{
-      tg.sendData(payload);
-      // sendData Web App ni yopadi - agar yetib kelsa muvaffaqiyatli
+      tg.sendData(JSON.stringify(payload));
+      return; // Muvaffaqiyatli - Web App yopiladi
     }catch(e){
-      console.error('sendData failed:', e.message);
-      // Fallback: botga /savetest komandasi yuborish
-      alert('Xato: ' + e.message + '\nBot orqali saqlang.');
+      console.log('sendData failed, trying alternative:', e.message);
     }
-  } else {
-    alert('Telegram Web App topilmadi!');
+  }
+  
+  // Fallback: /save_ENCODED komandasi
+  // Web App yopib botga komanda yuboramiz
+  if(tg){
+    tg.close();
+    // 1 soniyadan keyin bot chat ochiladi, foydalanuvchi /save bosadi
+    setTimeout(()=>{
+      tg.openTelegramLink('https://t.me/legistman_bot?start=save_'+encoded.slice(0,200));
+    }, 500);
   }
 }
 function cancelQ(){
@@ -1620,6 +1624,14 @@ function addGuide(){
     tg.sendData(JSON.stringify({action:'add_guide',name,is_free:admGT==='free'?1:0}));
   }catch(e){console.log('addGuide error:',e);}
 }
+function openBotAdmin(type){
+  hap('medium');
+  // Web App yopiladi, bot admin menyusi ochiladi
+  if(tg){
+    tg.close();
+  }
+}
+
 function broadcast(){
   const msg=document.getElementById('a-bc').value.trim();
   if(!msg){toast('Xabar matnini kiriting');return;}
