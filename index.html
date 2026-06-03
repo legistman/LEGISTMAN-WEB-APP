@@ -1131,11 +1131,34 @@ let U={full_name:'',is_pro:false,is_admin:false,is_new:true,
   pro_price:'349 000',card_num:'9860 3501 4876 2387',card_own:'Mallayev Ozodbek'};
 
 try{
-  // 1. URL parametrdan olish (WebAppInfo url da yuboriladi)
-  const urlParams = new URLSearchParams(window.location.search);
-  const sp = urlParams.get('tgWebAppStartParam') || tg?.initDataUnsafe?.start_param;
-  if(sp) Object.assign(U, JSON.parse(atob(sp)));
-  // 2. Telegram user dan to'ldirish
+  // Telegram Web App da start_param tg.initDataUnsafe.start_param dan keladi
+  // URL search va hash dan ham tekshiramiz
+  let sp = null;
+  
+  // 1. tg.initDataUnsafe.start_param (asosiy usul)
+  if(tg?.initDataUnsafe?.start_param){
+    sp = tg.initDataUnsafe.start_param;
+  }
+  
+  // 2. URL search parametrlardan
+  if(!sp){
+    const usp = new URLSearchParams(window.location.search);
+    sp = usp.get('tgWebAppStartParam') || usp.get('start_param');
+  }
+  
+  // 3. URL hash dan
+  if(!sp && window.location.hash){
+    const hsp = new URLSearchParams(window.location.hash.slice(1));
+    sp = hsp.get('tgWebAppStartParam');
+  }
+  
+  if(sp){
+    const decoded = JSON.parse(atob(sp));
+    Object.assign(U, decoded);
+    console.log('User loaded:', U.full_name, 'admin:', U.is_admin);
+  }
+  
+  // Telegram user dan to'ldirish
   const tgUser = tg?.initDataUnsafe?.user;
   if(tgUser && !U.full_name){
     U.full_name = ((tgUser.first_name||'') + (tgUser.last_name?' '+tgUser.last_name:'')).trim();
