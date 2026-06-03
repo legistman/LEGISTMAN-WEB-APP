@@ -1469,11 +1469,13 @@ function copyCard(type){
 }
 function sendProof(type){
   hap('medium');
-  send2(type==='pro'?'send_proof_pro':'send_proof_sahovat');
-  // Web App yopiladi — foydalanuvchi botga qaytadi va rasm yuboradi
-  setTimeout(()=>{
-    if(tg) tg.close();
-  }, 800);
+  const action = type==='pro' ? 'send_proof_pro' : 'send_proof_sahovat';
+  // sendData Web App yopilishi bilan birga ishlaydi
+  try{
+    tg?.sendData(JSON.stringify({action}));
+  }catch(e){
+    console.log('sendData error:', e);
+  }
 }
 function openLink(url){try{tg?.openLink(url)}catch(e){window.open(url)}}
 
