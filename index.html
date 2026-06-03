@@ -1468,7 +1468,10 @@ function copyCard(type){
 function sendProof(type){
   hap('medium');
   send2(type==='pro'?'send_proof_pro':'send_proof_sahovat');
-  toast('Bot orqali chekni yuboring');
+  // Web App yopiladi — foydalanuvchi botga qaytadi va rasm yuboradi
+  setTimeout(()=>{
+    if(tg) tg.close();
+  }, 800);
 }
 function openLink(url){try{tg?.openLink(url)}catch(e){window.open(url)}}
 
